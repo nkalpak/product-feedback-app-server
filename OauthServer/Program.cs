@@ -9,8 +9,16 @@ var builder = WebApplication.CreateBuilder(args);
 {
     builder.Services.AddControllers();
 
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowEverything", policyBuilder =>
+        {
+            policyBuilder.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+        });
+    });
+
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddOpenApiDocument();
 
     builder.Services
         .AddAuthentication("OAuth")
@@ -44,10 +52,11 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseOpenApi();
+    app.UseSwaggerUi3();
 }
+
+app.UseCors("AllowEverything");
 
 app.UseHttpsRedirection();
 

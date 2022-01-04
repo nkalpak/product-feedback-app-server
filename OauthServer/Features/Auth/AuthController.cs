@@ -12,10 +12,37 @@ namespace OauthServer.Features.Auth;
 public class AuthController : ControllerBase
 {
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly SignInManager<IdentityUser> _signInManager;
 
     public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
     {
         _userManager = userManager;
+        _signInManager = signInManager;
+    }
+
+    [HttpPost("login")]
+    public async Task<ActionResult<LoginResponseModel>> Login(LoginRequestModel request)
+    {
+        var user = _userManager.FindByNameAsync(request.Username);
+        if (user.Result == null) return BadRequest("Invalid username or password.");
+
+        var signInResponse = await _signInManager.PasswordSignInAsync(user.Result, request.Password, false, false);
+        if (!signInResponse.Succeeded) return BadRequest("Invalid username or password");
+
+        var token = new JwtSecurityToken(
+            Constants.Issuer,
+            Constants.Audience,
+            new[] {new Claim(JwtRegisteredClaimNames.Sub, user.Result.Id)},
+            DateTime.Now,
+            DateTime.Now.AddHours(1),
+            new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Constants.Secret)),
+                SecurityAlgorithms.HmacSha256
+            )
+        );
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        return Ok(new LoginResponseModel {AccessToken = tokenHandler.WriteToken(token)});
     }
 
     [HttpPost("register")]
@@ -39,6 +66,8 @@ public class AuthController : ControllerBase
             )
         );
 
-        return Ok(new RegisterResponseModel {AccessToken = token.ToString()});
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        return Ok(new RegisterResponseModel {AccessToken = tokenHandler.WriteToken(token)});
     }
 }
