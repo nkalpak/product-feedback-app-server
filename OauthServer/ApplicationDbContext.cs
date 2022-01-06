@@ -11,4 +11,6 @@ public class ApplicationDbContext : IdentityDbContext
     }
 
     public DbSet<ProductRequest> ProductRequest { get; set; }
+
+    public DbSet<ProductRequestVote> ProductRequestVote { get; set; }
 }
