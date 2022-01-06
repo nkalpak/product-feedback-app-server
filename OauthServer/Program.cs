@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OauthServer;
+using OauthServer.Features.Auth;
+using OauthServer.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,17 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddOpenApiDocument();
 
-    builder.Services
-        .AddAuthentication("OAuth")
-        .AddJwtBearer("OAuth", options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Constants.Secret)),
-                ValidIssuer = Constants.Issuer,
-                ValidAudience = Constants.Audience
-            };
-        });
+    builder.Services.AddScoped<IAuthService, AuthService>();
 
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
@@ -58,11 +50,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowEverything");
 
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
-
-app.UseAuthorization();
+app.UseMiddleware<JwtMiddleware>();
 
 app.MapControllers();
 

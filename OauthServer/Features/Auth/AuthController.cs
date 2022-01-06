@@ -1,9 +1,5 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace OauthServer.Features.Auth;
 
@@ -13,36 +9,26 @@ public class AuthController : ControllerBase
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly IAuthService _authService;
 
-    public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+    public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
+        IAuthService authService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _authService = authService;
     }
 
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponseModel>> Login(LoginRequestModel request)
     {
-        var user = _userManager.FindByNameAsync(request.Username);
-        if (user.Result == null) return BadRequest("Invalid username or password.");
+        var user = await _userManager.FindByNameAsync(request.Username);
+        if (user == null) return BadRequest("Invalid username or password.");
 
-        var signInResponse = await _signInManager.PasswordSignInAsync(user.Result, request.Password, false, false);
+        var signInResponse = await _signInManager.PasswordSignInAsync(user, request.Password, false, false);
         if (!signInResponse.Succeeded) return BadRequest("Invalid username or password");
 
-        var token = new JwtSecurityToken(
-            Constants.Issuer,
-            Constants.Audience,
-            new[] {new Claim(JwtRegisteredClaimNames.Sub, user.Result.Id)},
-            DateTime.Now,
-            DateTime.Now.AddHours(1),
-            new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Constants.Secret)),
-                SecurityAlgorithms.HmacSha256
-            )
-        );
-        var tokenHandler = new JwtSecurityTokenHandler();
-
-        return Ok(new LoginResponseModel {AccessToken = tokenHandler.WriteToken(token)});
+        return Ok(new LoginResponseModel {AccessToken = _authService.GenerateToken(user)});
     }
 
     [HttpPost("register")]
@@ -54,20 +40,6 @@ public class AuthController : ControllerBase
 
         var storedUser = await _userManager.FindByNameAsync(request.Username);
 
-        var token = new JwtSecurityToken(
-            Constants.Issuer,
-            Constants.Audience,
-            new[] {new Claim(JwtRegisteredClaimNames.Sub, storedUser.Id)},
-            DateTime.Now,
-            DateTime.Now.AddHours(1),
-            new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Constants.Secret)),
-                SecurityAlgorithms.HmacSha256
-            )
-        );
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-
-        return Ok(new RegisterResponseModel {AccessToken = tokenHandler.WriteToken(token)});
+        return Ok(new RegisterResponseModel {AccessToken = _authService.GenerateToken(storedUser)});
     }
 }
