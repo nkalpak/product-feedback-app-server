@@ -8,7 +8,7 @@ var settings = new TypeScriptClientGeneratorSettings
 {
     ClassName = "{controller}Client",
     Template = TypeScriptTemplate.Fetch,
-    TypeScriptGeneratorSettings = {TypeStyle = TypeScriptTypeStyle.Interface}
+    TypeScriptGeneratorSettings = {TypeStyle = TypeScriptTypeStyle.Interface},
 };
 
 var generator = new TypeScriptClientGenerator(document, settings);
