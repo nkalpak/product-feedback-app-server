@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.AspNetCore.Identity;
+using OauthServer.Features.Auth;
 
 namespace OauthServer.Features.ProductRequest;
 
@@ -15,5 +15,5 @@ public class Comment
     public string Content { get; set; }
 
     [Required]
-    public IdentityUser User { get; set; }
+    public User User { get; set; }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using OauthServer.Features.Auth;
 
 namespace OauthServer.Helpers;
 
@@ -9,7 +10,7 @@ public class AuthorizeAttribute : Attribute, IAuthorizationFilter
 {
     public void OnAuthorization(AuthorizationFilterContext context)
     {
-        var user = (IdentityUser) context.HttpContext.Items["User"];
+        var user = (User) context.HttpContext.Items["User"];
         if (user == null)
         {
             context.Result = new JsonResult(new {message = "Unauthorized"})

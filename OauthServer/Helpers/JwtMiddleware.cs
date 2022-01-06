@@ -2,6 +2,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using OauthServer.Features.Auth;
 
 namespace OauthServer.Helpers;
 
@@ -14,7 +15,7 @@ public class JwtMiddleware
         _next = next;
     }
 
-    public async Task Invoke(HttpContext context, UserManager<IdentityUser> userManager)
+    public async Task Invoke(HttpContext context, UserManager<User> userManager)
     {
         var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
@@ -26,7 +27,7 @@ public class JwtMiddleware
         await _next(context);
     }
 
-    private async Task AttachUserToContext(HttpContext context, UserManager<IdentityUser> userManager, string token)
+    private async Task AttachUserToContext(HttpContext context, UserManager<User> userManager, string token)
     {
         try
         {

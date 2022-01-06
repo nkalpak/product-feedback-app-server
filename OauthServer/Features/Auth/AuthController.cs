@@ -7,11 +7,11 @@ namespace OauthServer.Features.Auth;
 [Route("/api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly UserManager<User> _userManager;
+    private readonly SignInManager<User> _signInManager;
     private readonly IAuthService _authService;
 
-    public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager,
+    public AuthController(UserManager<User> userManager, SignInManager<User> signInManager,
         IAuthService authService)
     {
         _userManager = userManager;
@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<RegisterResponseModel>> Register(RegisterRequestModel request)
     {
-        var newUser = new IdentityUser {UserName = request.Username};
+        var newUser = new User {UserName = request.Username};
         var createResponse = await _userManager.CreateAsync(newUser, request.Password);
         if (!createResponse.Succeeded) return BadRequest(createResponse.Errors);
 

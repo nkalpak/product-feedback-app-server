@@ -12,8 +12,8 @@ using OauthServer;
 namespace OauthServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220106134949_AddProductRequestVote")]
-    partial class AddProductRequestVote
+    [Migration("20220106160003_ChangeIdentityUserToCustomUser")]
+    partial class ChangeIdentityUserToCustomUser
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -87,6 +87,10 @@ namespace OauthServer.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("text");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
@@ -137,6 +141,8 @@ namespace OauthServer.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -255,6 +261,12 @@ namespace OauthServer.Migrations
                     b.Property<int>("Category")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DateUpdated")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
@@ -274,32 +286,15 @@ namespace OauthServer.Migrations
                     b.ToTable("ProductRequest");
                 });
 
-            modelBuilder.Entity("OauthServer.Features.ProductRequest.ProductRequestVote", b =>
+            modelBuilder.Entity("OauthServer.Features.Auth.User", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
-                    b.Property<Guid>("ProductRequestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("Upvote")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("UserId")
+                    b.Property<string>("ProfilePictureUrl")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductRequestId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ProductRequestVote");
+                    b.HasDiscriminator().HasValue("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -359,30 +354,11 @@ namespace OauthServer.Migrations
                         .WithMany("Comments")
                         .HasForeignKey("ProductRequestId");
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                    b.HasOne("OauthServer.Features.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("OauthServer.Features.ProductRequest.ProductRequestVote", b =>
-                {
-                    b.HasOne("OauthServer.Features.ProductRequest.ProductRequest", "ProductRequest")
-                        .WithMany()
-                        .HasForeignKey("ProductRequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ProductRequest");
 
                     b.Navigation("User");
                 });

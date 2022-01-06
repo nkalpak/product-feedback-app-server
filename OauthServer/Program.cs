@@ -1,12 +1,11 @@
-using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using OauthServer;
 using OauthServer.Features.Auth;
 using OauthServer.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 {
     builder.Services.AddControllers();
@@ -30,7 +29,7 @@ var builder = WebApplication.CreateBuilder(args);
     });
 
     builder.Services
-        .AddIdentity<IdentityUser, IdentityRole>(options =>
+        .AddIdentity<User, IdentityRole>(options =>
         {
             options.Password.RequireDigit = false;
             options.Password.RequireNonAlphanumeric = false;

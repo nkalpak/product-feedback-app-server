@@ -8,12 +8,12 @@ namespace OauthServer.Features.Auth;
 
 public interface IAuthService
 {
-    string GenerateToken(IdentityUser user);
+    string GenerateToken(User user);
 }
 
 public class AuthService : IAuthService
 {
-    public string GenerateToken(IdentityUser user)
+    public string GenerateToken(User user)
     {
         var token = new JwtSecurityToken(
             Constants.Issuer,

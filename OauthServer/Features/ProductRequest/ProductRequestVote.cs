@@ -1,21 +1,25 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
+using OauthServer.Helpers;
 
 namespace OauthServer.Features.ProductRequest;
 
 [Table("ProductRequestVote")]
-public class ProductRequestVote
+public class ProductRequestVote : BaseEntity
 {
-    [Required]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
-    
-    [Required] public IdentityUser User { get; set; }
 
-    [Required] public ProductRequest ProductRequest { get; set; }
+    public string UserId { get; set; }
+    public IdentityUser User { get; set; }
 
-    [Required] public bool Upvote { get; set; }
+    public Guid ProductRequestId { get; set; }
+    public ProductRequest ProductRequest { get; set; }
 
-    [Required] public DateTime Timestamp { get; set; }
+    public ProductRequestVoteDirection Direction { get; set; }
+}
+
+public enum ProductRequestVoteDirection {
+    Upvote = 1,
+    Downvote = -1
 }

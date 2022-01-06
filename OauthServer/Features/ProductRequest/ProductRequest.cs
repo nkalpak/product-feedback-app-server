@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using OauthServer.Helpers;
 
 namespace OauthServer.Features.ProductRequest;
 
 [Table("ProductRequest")]
-public class ProductRequest
+public class ProductRequest : BaseEntity
 {
     [Required]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -21,6 +22,8 @@ public class ProductRequest
     public string Description { get; set; }
 
     [Required] public List<Comment> Comments { get; set; } = new();
+
+    public List<ProductRequestVote> ProductRequestVotes { get; set; }
 }
 
 public enum ProductRequestCategory

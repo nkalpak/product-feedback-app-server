@@ -38,4 +38,6 @@ public class ProductRequestDto
     public string Description { get; set; }
 
     [Required] public List<CommentDto> Comments { get; set; } = new();
+
+    [Required] public bool HasCurrentUserUpvoted { get; set; }
 }
