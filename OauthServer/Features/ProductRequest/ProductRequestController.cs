@@ -71,22 +71,29 @@ public class ProductRequestController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductRequestDto>>> GetAll()
+    public async Task<ActionResult<IEnumerable<ProductRequestDto>>> GetAll(ProductRequestSortBy sortBy)
     {
         var result = await _context.ProductRequest
             .Include(x => x.ProductRequestVotes)
             .ToListAsync();
         var user = (User) HttpContext.Items["User"];
 
-        return Ok(result.Select(productRequest =>
-        {
-            var hasVoted = productRequest.ProductRequestVotes.FirstOrDefault(vote => vote.UserId == user.Id) != null;
-            return new ProductRequestDto(productRequest)
+        return Ok(result
+            .Select(productRequest =>
             {
-                HasCurrentUserUpvoted = hasVoted,
-                Upvotes = productRequest.ProductRequestVotes.Count
-            };
-        }));
+                var hasVoted = productRequest
+                    .ProductRequestVotes
+                    .FirstOrDefault(vote => vote.UserId == user.Id) != null;
+
+                return new ProductRequestDto(productRequest)
+                {
+                    HasCurrentUserUpvoted = hasVoted,
+                    Upvotes = productRequest.ProductRequestVotes.Count
+                };
+            })
+            .OrderByDescending(productRequest => sortBy == ProductRequestSortBy.MostUpvotes
+                ? productRequest.Upvotes
+                : productRequest.Comments.Count));
     }
 
     [HttpGet("{id:required}")]
@@ -107,4 +114,10 @@ public class ProductRequestController : ControllerBase
             Upvotes = result.ProductRequestVotes.Count
         });
     }
+}
+
+public enum ProductRequestSortBy
+{
+    MostUpvotes = 0,
+    MostComments = 1
 }
