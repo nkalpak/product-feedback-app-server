@@ -71,14 +71,18 @@ public class ProductRequestController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ProductRequestDto>>> GetAll(ProductRequestSortBy sortBy)
+    public async Task<ActionResult<IEnumerable<ProductRequestDto>>> GetAll(
+        ProductRequestSortBy sortBy,
+        string? filterBy
+    )
     {
         var result = await _context.ProductRequest
             .Include(x => x.ProductRequestVotes)
             .ToListAsync();
         var user = (User) HttpContext.Items["User"];
 
-        return Ok(result
+        var whitelistCategories = filterBy?.Split(",").Select(int.Parse) ?? Array.Empty<int>();
+        var productRequests = result
             .Select(productRequest =>
             {
                 var hasVoted = productRequest
@@ -93,7 +97,11 @@ public class ProductRequestController : ControllerBase
             })
             .OrderByDescending(productRequest => sortBy == ProductRequestSortBy.MostUpvotes
                 ? productRequest.Upvotes
-                : productRequest.Comments.Count));
+                : productRequest.Comments.Count)
+            .Where(productRequest => whitelistCategories.Contains((int) productRequest.Category));
+
+
+        return Ok(productRequests);
     }
 
     [HttpGet("{id:required}")]
